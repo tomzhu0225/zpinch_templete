@@ -1,0 +1,271 @@
+run_comment = "ZPinch_2D"		# comment for run
+log_file    = "ZPinch_2D.log"	# name of log file to create
+basenm      = "ZPinch_2D_"		# base name for output files (both checkpoint and plot files)
+
+# Setup command:
+## ./setup -auto magnetoHD/zbw/zpinch_templete -2d +cylindrical +ug species=al,vacu +usm +hdf5typeio -nxb=8 -nyb=8 
+
+# Notes:
+# - This file is used for testing seeded single mode perturbution.
+# - By lybbb 2023/9/10
+
+##########################
+#                        #
+#     I/O PARAMETERS     #
+#                        #
+##########################
+UnitSystem = "CGS"
+geometry = "cylindrical"		# Grid geometry; cartesian is default
+
+### Checkpoint Options  ###
+checkpointFileIntervalTime = 5.0e-9	# make a checkpoint after this amnt of time
+checkpointFileIntervalStep = 9999999	# make a checkpoint after this many steps
+
+### Plot Options ###
+plotFileNumber       = 0		# initial plot file number ("changed")
+plotFileIntervalStep = 100000		# write a plotfile after this many steps
+#plotFileIntervalStep = 1		# write a plotfile after this many steps
+plotFileIntervalTime = 1.0e-09		# write a plotfile after this much time (the sim is never exact, but close)
+plot_var_1           = "dens"		# density
+plot_var_2           = "tele"		# electron temperature
+plot_var_3           = "tion"		# ion temperature
+plot_var_4           = "pres"		# radiation temperature
+plot_var_5           = "pion"		# pressure
+plot_var_6           = "ye"		# ye = Zbar/Abar (where Zbar = ave ionization lvl, Abar = ave atomic mass of cell)
+plot_var_7           = "sumy"		# sumy = 1/Abar (same page as above)
+plot_var_8           = "velx"		# y-component of velocity
+plot_var_9           = "temp"
+plot_var_10          = "line"
+plot_var_11          = "vacu"
+plot_var_12          = "magz"
+plot_var_13          = "magp"
+plot_var_14          = "res2"		# perpendicular component of magnetic resistivity
+plot_var_15          = "eele"           # electron specific internal energy (erg/g)
+plot_var_16          = "eion"           # ion specific internal energy (erg/g)
+
+
+### Restart Options ###
+restart              = .false. 		# lets you pick up where a specified checkpoint file left off
+checkpointFileNumber = 0		# initial checkpoint file number
+
+##############################
+#                            #
+#     INITIAL CONDITIONS     #
+#                            #
+##############################
+
+### species Al
+sim_line_dens = 1.3875e-3
+sim_line_minDens = 2e-06       # also acts as density criterion for vacuum
+sim_line_tele = 10000.  
+sim_line_maxTemp = 300.e12      # default, effectively no limit
+sim_lamda = 0.25
+## Al
+eos_alEosType = "eos_gam"
+ms_alA = 183.84
+ms_alZ = 74
+gamma = 1.6667
+
+## species Vacu
+sim_vacu_dens = 1.e-6  ## initial vacu density
+sim_vacu_tele = 300.  
+
+eos_vacuEosType = "eos_gam"
+ms_vacuA = 183.84
+ms_vacuZ = 74
+gamma = 1.6667
+
+#### Current drive
+circ_currFile = "current.dat"	# filename for current input (ns vs. MA)
+
+#### Vacuum resistivity
+#res_vacSpec = "vacu"
+res_vacDens = 1e10  # <= this density, use vacRes in a vacuum cell
+#res_vacFrac = 0.5    # VACU_SPEC > this is treated as vacuum
+res_vacRes = 1.e9   # cm2/s
+
+###########################
+#                         #
+#     TIME PARAMETERS     #
+#                         #
+###########################
+tstep_change_factor = 1.10		# "The initial time step dt is multiplied with this factor at every timestep,"
+cfl            = 0.4			# Courant-Friedrichs-Lewy (CFL) factor
+rt_dtFactor    = 1.0e+100		# Coefficient for RadTrans time step
+hx_dtFactor    = 1.0e+100		# hx = heat exchange, likely similar to above
+tmax           = 171.e-9 		# Maximum simulation time
+dtmin          = 1.0e-16		# Minimum timestep
+dtinit         = 1.0e-12		# Initial timestep
+dtmax          = 1.0e-10		# Maximum timestep
+nend           = 1000000000		# Maximum number of timesteps to take
+
+
+###########################
+#                         #
+#     MESH PARAMETERS     #
+#                         #
+###########################
+
+
+xmin = 0.0				# physical domain lower bound in x dir
+xmax = 1.5
+ymin = 0.
+ymax = 1.0
+
+iGridSize	= 64	#defined as nxb * iprocs
+jGridSize	= 64	#defined as nyb * jprocs
+kGridSize	= 1	#defined as nzb * kprocs
+iProcs		= 4	#number of procs in the i direction * 40
+jProcs		= 2	#number of procs in the j direction * 16
+kProcs		= 1	#num procs in k direction
+
+############################
+#                          #
+#     HYDRO PARAMETERS     #
+#                          #
+############################
+useHydro = .true.
+order            = 2       		# Data reconstruction (first/second/third/fifth order)
+transOrder       = 1                    # Interpolation order
+slopeLimiter     = "limited" 		# Slope limiters (minmod, mc, vanLeer, hybrid, limited)
+LimitedSlopeBeta = 1.0       		# Slope parameter for the "limited" slope by Toro
+charLimiting     = .true.   		# Characteristic limiting vs. Primitive limiting
+use_avisc        = .true.   		# use artificial viscosity (originally for PPM)
+cvisc            = 0.4     		# artificial viscosity coefficient
+use_flattening   = .true.  		# use flattening (dissipative) (originally for PPM)
+use_steepening   = .false.  		# use contact steepening (originally for PPM)
+use_upwindTVD    = .false.  		# use upwind biased TVD slope for PPM (need nguard=6)
+use_gravHalfUpdate = .false.             # On gravitational acceleration source terms at the half time step
+
+##  For Riemann Solvers in UHD  ##
+RiemannSolver    = "HLL"   		# Roe, HLL, HLLC, LLF, Marquina, hybrid
+entropy          = .true.  		# On/off entropy fix algorithm for Roe solver
+#entropyFixMethod = "HARTENHYMAN"
+shockDetect      = .true.  		# Shock Detect for numerical stability
+shockLowerCFL    = .true.               # lower CFL factor where strong shocks are detected
+use_hybridOrder  = .true.   		# Enforce Riemann density jump
+
+xl_boundary_type = "axisymmetric"		# lower (left) boundary condition in x dir
+xr_boundary_type = "nocurrent"		# upper (right) boundary condition in x dir
+yl_boundary_type = "outflow"		# lower boundary condition in y dir
+yr_boundary_type = "outflow"		# upper boundary condition in y dir
+zl_boundary_type = "outflow"		# lower boundary condition in z dir
+zr_boundary_type = "outflow"		# upper boundary condition in z dir
+
+## -------------------------------------------------------------##
+##  SWITCHES SPECIFIC TO THE UNSPLIT STAGGERED MESH MHD SOLVER  ##
+
+#       II. MAGNETIC(B) AND ELECTRIC(E) FIELDS:
+E_modification  = .true.          # High order algorithm for E-field construction
+energyFix       = .true. 
+ForceHydroLimit = .false.          # Pure Hydro Limit (B=0)
+prolMethod      = "balsara_prol" # Prolongation method (injecton_prol, balsara_prol)
+
+
+# MHD/BIERMANN BATTERY OPTIONS:
+use_Hall = .false.
+hy_biermannSource = .false.
+use_biermann      = .false.
+use_biermann1T    = .false.
+
+#	DivB control switch
+killdivb	= .true.
+
+hy_fullSpecMsFluxHandling = .false.
+usePlasmaState = .true.
+
+########################################
+#                                      #
+#     RADIATION/OPACITY PARAMETERS     #
+#                                      #
+########################################
+useRadTrans = .false.
+
+#################################
+#                               #
+#     CONDUCTION PARAMETERS     #
+#                               #
+#################################
+useDiffuse      = .true.		# turns on diffuse
+useConductivity = .true.		# turns on conductivity
+diff_useEleCond = .true.		# activates electron thermal conduction
+diff_eleFlMode  = "fl_larsen"		# specifies flux-limiter mode, options are listed on pg294 (310 in pdf)
+diff_eleFlCoef  = 0.065			# sets value of alpha_ele, the electron conductivity flux-limiter coefficient
+diff_thetaImplct = 0.5			# a value between 0 and 1
+
+diff_useIonCond = .true.		# activates ion thermal conduction
+diff_ionFlMode  = "fl_larsen"		# specifies flux-limiter mode, options are listed on pg294 (310 in pdf)
+diff_ionFlCoef  = 0.065			# sets value of alpha_ion, the ion conductivity flux-limiter coefficient
+diff_ionThetaImplct = 0.5		# a value between 0 and 1
+
+diff_eleXlBoundaryType = "neumann"	# indicates a Neumann boundary condition
+diff_eleXrBoundaryType = "neumann"      # shouldn't be much difference here since vacu temperature is limited
+diff_eleYlBoundaryType = "neumann"
+diff_eleYrBoundaryType = "neumann"
+diff_eleZlBoundaryType = "neumann"
+diff_eleZrBoundaryType = "neumann"
+
+diff_ionXlBoundaryType = "neumann"	# indicates a Neumann boundary condition
+diff_ionXrBoundaryType = "neumann"
+diff_ionYlBoundaryType = "neumann"
+diff_ionYrBoundaryType = "neumann"
+diff_ionZlBoundaryType = "neumann"
+diff_ionZrBoundaryType = "neumann"
+
+
+####################################
+#                                  #
+#     HEAT EXCHANGE PARAMETERS     #
+#                                  #
+####################################
+useHeatexchange = .false.		# turns on heat exchange
+
+##########################
+#                        #
+#     EOS PARAMETERS     #
+#                        #
+##########################
+eosModeInit        = "dens_temp"
+eosMode            = "dens_ie"
+eos_useLogTables = .false.
+eos_maxNewton    = 10000 		# ("default is 50") defines max number of interations
+eos_tolerance    = 1.e-8 		# ("default is 1e-8") defines convergence tolerance
+
+
+###########################
+#                         #
+#       DIFFUSION         #
+#                         #
+###########################
+useMagneticResistivity = .true.
+resistivitySolver = "implicit"
+resistivityForm = "perpendicular"
+diff_magThetaImplct = 0.5
+diff_magFlMode = "fl_none"
+diff_magFlCoef = 1.0
+
+diff_magzXlBoundaryType = "neumann"
+diff_magzXrBoundaryType = "circuit"
+diff_magzYlBoundaryType = "neumann"
+diff_magzYrBoundaryType = "neumann"
+diff_magzZlBoundaryType = "neumann"
+diff_magzZrBoundaryType = "neumann"
+
+gr_hypreSolverType = "HYPRE_GMRES"
+gr_hypreMaxIter = 1000
+gr_hypreMaxIterMag = 1000
+gr_hyprereltol = 1.e-6
+gr_hyprereltolMag = 1.e-6
+gr_hypreUseMagFloor = .false.
+gr_hypreMagFloor = 0.0
+
+conserveAngField = .true.
+conserveAngMom = .false.
+
+useDiffuseComputeDtTherm       = .FALSE.
+useDiffuseComputeDtMagnetic    = .FALSE.
+useDiffuseComputeDtSpecies     = .FALSE.
+useDiffuseComputeDtVisc        = .FALSE.
+useDiffuseSpecies              = .FALSE.
+useDiffuseVisc                 = .FALSE.
+

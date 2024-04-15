@@ -1,0 +1,64 @@
+## Configuration file for ZPinch MRT test
+
+## UG setup command:
+
+REQUIRES Driver
+REQUIRES physics/Hydro
+REQUIRES Multispecies/MultispeciesMain
+
+## for the logLambda function
+REQUIRES physics/utilities/PlasmaState
+
+## typical units for HEDP
+USESETUPVARS ThreeT
+IF ThreeT
+   REQUESTS physics/Diffuse/DiffuseMain/Unsplit
+   REQUESTS physics/sourceTerms/Heatexchange/HeatexchangeMain/Spitzer
+   REQUESTS physics/materialProperties/Conductivity/ConductivityMain/JiHeld
+   REQUESTS physics/materialProperties/MagneticResistivity/MagneticResistivityMain/SpitzerHighZ_org
+ELSE 
+   REQUESTS physics/Diffuse/DiffuseMain/Unsplit
+   REQUIRES physics/Eos/EosMain/Gamma
+   REQUESTS physics/materialProperties/Conductivity/ConductivityMain/JiHeld
+   REQUESTS physics/materialProperties/MagneticResistivity/MagneticResistivityMain/SpitzerHighZ
+ENDIF
+
+
+REQUIRES physics/sourceTerms/Circuit/CircuitMain/FileInput
+DATAFILES current.dat
+##DATAFILES Voc_example.dat
+
+##########################
+#                        #
+#   RUNTIME PARAMETERS   #
+#                        #
+##########################
+# These are just defaults and can be overridden in the .par file.
+# A gen format for numbers is: PARAMETER <name> REAL <value> [<min> to <max>], where the bracket values limit the variable. Can be something like [0 to ] also.
+
+
+## LINER
+D sim_line_dens  density of liner
+PARAMETER sim_line_dens  REAL  0.6
+
+D sim_vacu_dens initial density for vacuum
+PARAMETER sim_vacu_dens  REAL  0.0
+
+D sim_line_minDens density floor for the liner
+PARAMETER sim_line_minDens  REAL 0.0
+
+D sim_line_tele  electron temperature of liner
+PARAMETER sim_line_tele  REAL  23210.
+
+D sim_line_maxTemp maximum electron and ion tempeature allowed in liner
+PARAMETER sim_line_maxTemp  REAL  1.e12
+
+D sim_lamda the purturbation wavelength
+PARAMETER sim_lamda  REAL  0.0
+
+VARIABLE resi
+VARIABLE rmgz
+VARIABLE zba
+VARIABLE curz
+
+PPDEFINE SHOW_COORD
